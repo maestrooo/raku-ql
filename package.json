@@ -1,0 +1,23 @@
+{
+  "name": "raku-ql",
+  "version": "1.0.0",
+  "description": "A TypeScript GraphQL query builder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/maestrooo/raku-ql.git"
+  },
+  "keywords": [
+    "graphql",
+    "builder"
+  ],
+  "author": "Michael Gallego",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/maestrooo/raku-ql/issues"
+  },
+  "homepage": "https://github.com/maestrooo/raku-ql#readme"
+}
