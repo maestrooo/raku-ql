@@ -9,6 +9,7 @@ export class OperationBuilder<T = any> extends FieldBuilder<T> {
   private _variables: { [key: string]: { type: string; defaultValue?: string } } = {};
   private _fragments: { [name: string]: FragmentDefinition } = {};
   private _operationDirectives: Directive[] = [];
+  private _operations: FieldNode[] = [];
 
   constructor(operationType: OperationType, operationName?: string) {
     super();
@@ -36,6 +37,94 @@ export class OperationBuilder<T = any> extends FieldBuilder<T> {
 
   public operationDirective(name: string, args?: { [key: string]: string }): this {
     this._operationDirectives.push({ name, args });
+    return this;
+  }
+
+  /**
+   * Adds an operation to the GraphQL query/mutation/subscription with type support.
+   * 
+   * Overload 1 (without alias, with args):
+   *    .operation<Metaobject>("createMetaobject", { input: "$input" }, metaobject => { metaobject.fields("id") })
+   * Overload 2 (without alias, without args):
+   *    .operation<Metaobject>("createMetaobject", metaobject => { metaobject.fields("id") })
+   * Overload 3 (with alias, with args):
+   *    .operation<Metaobject>({ createMetaobject: "aliasedName" }, { input: "$input" }, metaobject => { metaobject.fields("id") })
+   * Overload 4 (with alias, without args):
+   *    .operation<Metaobject>({ createMetaobject: "aliasedName" }, metaobject => { metaobject.fields("id") })
+   */
+  public operation<TResponse = any, K extends keyof T = keyof T>(
+    name: K | string,
+    args: { [key: string]: any },
+    callback: (builder: FieldBuilder<TResponse>) => void
+  ): this;
+  public operation<TResponse = any, K extends keyof T = keyof T>(
+    name: K | string,
+    callback: (builder: FieldBuilder<TResponse>) => void
+  ): this;
+  public operation<TResponse = any, K extends keyof T = keyof T>(
+    nameMapping: Partial<Record<K | string, string>>,
+    args: { [key: string]: any },
+    callback: (builder: FieldBuilder<TResponse>) => void
+  ): this;
+  public operation<TResponse = any, K extends keyof T = keyof T>(
+    nameMapping: Partial<Record<K | string, string>>,
+    callback: (builder: FieldBuilder<TResponse>) => void
+  ): this;
+  public operation<TResponse = any, K extends keyof T = keyof T>(
+    nameOrMapping: K | string | Partial<Record<K | string, string>>,
+    argsOrCallback: { [key: string]: any } | ((builder: FieldBuilder<TResponse>) => void),
+    callbackOrNothing?: (builder: FieldBuilder<TResponse>) => void
+  ): this {
+    // Extract name and alias
+    let name: string;
+    let alias: string | undefined;
+    let callback: (builder: FieldBuilder<TResponse>) => void;
+    let args: { [key: string]: any } | undefined;
+    
+    if (typeof nameOrMapping === "object") {
+      const keys = Object.keys(nameOrMapping);
+      if (keys.length !== 1) {
+        throw new Error("Only one key is allowed in the alias mapping");
+      }
+      name = keys[0];
+      alias = (nameOrMapping as any)[name];
+    } else {
+      name = nameOrMapping as string;
+    }
+    
+    // Determine if we're using the callback-only version or the args+callback version
+    if (typeof argsOrCallback === "function") {
+      callback = argsOrCallback as (builder: FieldBuilder<TResponse>) => void;
+      args = undefined;
+    } else {
+      args = argsOrCallback as { [key: string]: any };
+      callback = callbackOrNothing as (builder: FieldBuilder<TResponse>) => void;
+      
+      if (!callback) {
+        throw new Error("Callback function is required for operation");
+      }
+    }
+
+    // Ensure arguments are strings if they exist
+    const stringArgs = args ? Object.fromEntries(
+      Object.entries(args).map(([k, v]) => [k, String(v)])
+    ) : undefined;
+    
+    const builder = new FieldBuilder<TResponse>();
+    callback(builder);
+    
+    const fieldNode: any = {
+      kind: "object",
+      name,
+      args: stringArgs,
+      fields: builder.getFields(),
+    };
+    
+    if (alias) {
+      fieldNode.alias = alias;
+    }
+    
+    this._operations.push(fieldNode);
     return this;
   }
 
@@ -195,9 +284,11 @@ export class OperationBuilder<T = any> extends FieldBuilder<T> {
     return this.buildDirectives(this._operationDirectives);
   }
 
-  // Build selection set.
+  // Build selection set - now combines regular fields and operation fields
   private buildSelectionSet(level: number, options: { pretty: boolean; indent: string }): string {
-    return this.buildFields(this.getFields(), level, options);
+    const regularFields = this.getFields();
+    const allFields = [...regularFields, ...this._operations];
+    return this.buildFields(allFields, level, options);
   }
 
   // Build fragments string.

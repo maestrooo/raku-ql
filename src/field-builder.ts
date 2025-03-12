@@ -109,6 +109,10 @@ export class FieldBuilder<T = any> {
    *    .object("feedback", (feedback) => { feedback.fields("details", "summary") })
    * Overload 2 (with alias):
    *    .object({ feedback: "aliasedName" }, (feedback) => { feedback.fields("details", "summary") })
+   * Overload 3 (with arguments, without alias):
+   *    .object("feedback", { key: "value" }, (feedback) => { feedback.fields("details", "summary") })
+   * Overload 4 (with arguments and alias):
+   *    .object({ feedback: "aliasedName" }, { key: "value" }, (feedback) => { feedback.fields("details", "summary") })
    */
   public object<K extends keyof T>(
     name: K,
@@ -119,10 +123,34 @@ export class FieldBuilder<T = any> {
     callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
   ): this;
   public object<K extends keyof T>(
-    nameOrMapping: K | Partial<Record<K, string>>,
+    name: K,
+    args: { [key: string]: any },
     callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+  ): this;
+  public object<K extends keyof T>(
+    nameMapping: Partial<Record<K, string>>,
+    args: { [key: string]: any },
+    callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+  ): this;
+  public object<K extends keyof T>(
+    nameOrMapping: K | Partial<Record<K, string>>,
+    argsOrCallback: { [key: string]: any } | ((builder: FieldBuilder<NonNullable<T[K]>>) => void),
+    maybeCallback?: (builder: FieldBuilder<NonNullable<T[K]>>) => void
   ): this {
     const { name, alias } = this.extractNameAndAlias(nameOrMapping);
+    let args: { [key: string]: any } | undefined;
+    let callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void;
+
+    if (typeof argsOrCallback === "function") {
+      callback = argsOrCallback as (builder: FieldBuilder<NonNullable<T[K]>>) => void;
+    } else {
+      args = argsOrCallback;
+      if (!maybeCallback) {
+        throw new Error("Callback must be provided when arguments are supplied");
+      }
+      callback = maybeCallback;
+    }
+
     const builder = new FieldBuilder<NonNullable<T[K]>>();
     callback(builder);
     const fieldNode: any = {
@@ -132,6 +160,11 @@ export class FieldBuilder<T = any> {
     };
     if (alias) {
       fieldNode.alias = alias;
+    }
+    if (args) {
+      fieldNode.args = Object.fromEntries(
+        Object.entries(args).map(([k, v]) => [k, String(v)])
+      );
     }
     this._fields.push(fieldNode);
     return this;
