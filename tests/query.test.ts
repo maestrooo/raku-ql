@@ -86,4 +86,23 @@ fragment ProductFragment on Product {
 }
     `.trim());
   });
+
+  it('should generate a valid GraphQL query with operation name', () => {
+    const query = QueryBuilder.query('GetMetaobject')
+      .variables({ id: 'ID!' })
+      .operation('metaobject', { id: '$id' }, metaobject => {
+        metaobject.fields('id', 'handle')
+      })
+      .build({ pretty: true });
+    
+    // Check that the query contains the "query" keyword and the name
+    expect(query).toMatch(`
+query GetMetaobject($id: ID!) {
+  metaobject(id: $id) {
+    id
+    handle
+  }
+}
+    `.trim());
+  });
 });

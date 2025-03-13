@@ -109,6 +109,29 @@ fragment ProductFragment on Product {
 }
 ```
 
+You can create operation with parameters, or create multiple operations in a single query, by using the `operation` method. The operation
+can optionally be typed with the return type:
+
+```ts
+const query = QueryBuilder.query('GetMetaobject')
+  .variables({ id: 'ID!' })
+  .operation<Metaobject>('metaobject', { id: '$id' }, metaobject => {
+    metaobject.fields('id', 'handle')
+  })
+  .build({ pretty: true });
+```
+
+Will generate:
+
+```graphql
+query GetMetaobject($id: ID!) {
+  metaobject(id: $id) {
+    id
+    handle
+  }
+}
+```
+
 ## Mutations
 
 To use mutations, use the `mutation` static method, along the `operation` method. The operation can be typed with the return type.
