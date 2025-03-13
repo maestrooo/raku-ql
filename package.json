@@ -1,8 +1,13 @@
 {
   "name": "raku-ql",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "A TypeScript GraphQL query builder",
-  "main": "index.js",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "test": "jest"

@@ -8,6 +8,14 @@ Raku-QL is a fully-typed TypeScript GraphQL query builder.
 
 Raku-QL is a GraphQL query builder, supporting most of the GraphQL spec.
 
+## Why using this library?
+
+This library has little to no values if you have a set of fixed GraphQL queries that rarely change. Directly hardcodding the queries is easier and require less typing. This library is useful, however, if you need to programmatically generate queries.
+
+## Installation
+
+Run the command `npm i raku-ql` to add the package.
+
 ## Queries
 
 To create a query, use the `query` static method of the query builder. The example below shows most of the supported features, including fields, objects, operation-level directive, field level directive, field parameters, alias, connections or fragments.
@@ -108,7 +116,7 @@ To use mutations, use the `mutation` static method, along the `operation` method
 ```ts
 const query = QueryBuilder.mutation('CreateMetaobject')
   .variables({ metaobject: 'CreateMetaobjectInput!' })
-  .operation<MetaobjectCreatePaylod>('metaobjectCreate', { metaobject: '$metaobject' }, metaobjectPayload => {
+  .operation<MetaobjectCreatePayload>('metaobjectCreate', { metaobject: '$metaobject' }, metaobjectPayload => {
     metaobjectPayload.object('metaobject', metaobject => {
       metaobject.fields('handle')
       .object({ 'field': 'season' }, { key: 'season' }, season => {
