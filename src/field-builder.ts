@@ -1,5 +1,5 @@
 import { createConnectionBuilder, ConnectionBuilder } from "./connection-builder-factory";
-import { FieldNode, Directive, Connection } from "./types";
+import { FieldNode, Directive, Connection, Unarray } from "./types";
 
 export class FieldBuilder<T = any> {
   private _fields: FieldNode[] = [];
@@ -116,33 +116,33 @@ export class FieldBuilder<T = any> {
    */
   public object<K extends keyof T>(
     name: K,
-    callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
   ): this;
   public object<K extends keyof T>(
     nameMapping: Partial<Record<K, string>>,
-    callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
   ): this;
   public object<K extends keyof T>(
     name: K,
     args: { [key: string]: any },
-    callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
   ): this;
   public object<K extends keyof T>(
     nameMapping: Partial<Record<K, string>>,
     args: { [key: string]: any },
-    callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
   ): this;
   public object<K extends keyof T>(
     nameOrMapping: K | Partial<Record<K, string>>,
-    argsOrCallback: { [key: string]: any } | ((builder: FieldBuilder<NonNullable<T[K]>>) => void),
-    maybeCallback?: (builder: FieldBuilder<NonNullable<T[K]>>) => void
+    argsOrCallback: { [key: string]: any } | ((builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void),
+    maybeCallback?: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
   ): this {
     const { name, alias } = this.extractNameAndAlias(nameOrMapping);
     let args: { [key: string]: any } | undefined;
-    let callback: (builder: FieldBuilder<NonNullable<T[K]>>) => void;
-
+    let callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void;
+  
     if (typeof argsOrCallback === "function") {
-      callback = argsOrCallback as (builder: FieldBuilder<NonNullable<T[K]>>) => void;
+      callback = argsOrCallback as (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void;
     } else {
       args = argsOrCallback;
       if (!maybeCallback) {
@@ -150,8 +150,8 @@ export class FieldBuilder<T = any> {
       }
       callback = maybeCallback;
     }
-
-    const builder = new FieldBuilder<NonNullable<T[K]>>();
+  
+    const builder = new FieldBuilder<Unarray<NonNullable<T[K]>>>();
     callback(builder);
     const fieldNode: any = {
       kind: "object",

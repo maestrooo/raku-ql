@@ -1,3 +1,5 @@
+export type Unarray<T> = T extends (infer U)[] ? U : T;
+
 /**
  * GraphQL Directive definition.
  */
