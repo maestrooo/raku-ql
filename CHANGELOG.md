@@ -1,3 +1,11 @@
+## 1.2.1
+
+* Ensures that arguments are properly rendered as string.
+
+## 1.2.0
+
+* Export the `FieldBuilder` and `OperationBuilder` so that they can be typed in consuming applications.
+
 ## 1.1.0
 
 * Ensure that field builder always "unarray" type so that autocompletion works. Now, while the field `fields` is of

@@ -155,6 +155,8 @@ export class OperationBuilder<T = any> extends FieldBuilder<T> {
           .join(", ");
         return `{ ${inner} }`;
       }
+    } else if (typeof value === "string") {
+      return value.startsWith("$") ? value : `"${value}"`;
     } else {
       return String(value);
     }

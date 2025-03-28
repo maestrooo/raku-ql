@@ -16,6 +16,9 @@ describe('GraphQL Generation', () => {
       .object({ 'feedback': 'aliasFeedback' }, feedback => {
         feedback.fields('rating', 'comment')
       })
+      .object({ 'field': 'fieldAlias' }, { key: 'value' }, field => {
+        field.fields('title')
+      })
       .connection('products', { first: "$productsCount" }, connection => {
         connection.nodes(node => {
           node.useFragment('ProductFragment')
@@ -39,10 +42,10 @@ describe('GraphQL Generation', () => {
     
     // Check that the query contains the "query" keyword and the name
     expect(query).toMatch(`
-query GetCollection($productsCount: Int!, $imageFormat: String! = JPG) @country(code: FR) {
+query GetCollection($productsCount: Int!, $imageFormat: String! = JPG) @country(code: "FR") {
   id
   aliasDescription: description
-  price @inCurrency(currency: EUR)
+  price @inCurrency(currency: "EUR")
   image {
     alt
     url(format: $imageFormat)
@@ -50,6 +53,9 @@ query GetCollection($productsCount: Int!, $imageFormat: String! = JPG) @country(
   aliasFeedback: feedback {
     rating
     comment
+  }
+  fieldAlias: field(key: "value") {
+    title
   }
   products(first: $productsCount) {
     nodes {

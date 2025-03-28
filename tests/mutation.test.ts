@@ -23,7 +23,7 @@ mutation CreateMetaobject($metaobject: CreateMetaobjectInput!) {
   metaobjectCreate(metaobject: $metaobject) {
     metaobject {
       handle
-      season: field(key: season) {
+      season: field(key: "season") {
         value
       }
     }
