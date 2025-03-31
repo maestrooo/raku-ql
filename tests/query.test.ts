@@ -29,6 +29,11 @@ describe('GraphQL Generation', () => {
           node.fields('id')
         })
       })
+      .connection('orders', { first: 50, type: undefined }, connection => {
+        connection.nodes(node => {
+          node.fields('id')
+        })
+      })
       .fragment('ProductFragment', 'Product', fragment => {
         fragment.fields('title')
           .connection('media', { first: '$productsCount' }, connection => {
@@ -74,6 +79,17 @@ query GetCollection($productsCount: Int!, $imageFormat: String! = JPG) @country(
     }
   }
   collections(first: 50) {
+    nodes {
+      id
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
+  orders(first: 50) {
     nodes {
       id
     }

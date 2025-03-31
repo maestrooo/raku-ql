@@ -1,3 +1,7 @@
+## 1.2.4
+
+* Ensure that undefined parameters are removed.
+
 ## 1.2.3
 
 * Ensure that numbers and floats parameters are not converted as string.

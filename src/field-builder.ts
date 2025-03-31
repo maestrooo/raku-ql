@@ -194,10 +194,19 @@ export class FieldBuilder<T = any> {
     callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection>) => void
   ): this {
     const { name, alias } = this.extractNameAndAlias(nameOrMapping);
+    // Filter undefined values from args.
+    const cleanedArgs = args
+    ? Object.fromEntries(
+        Object.entries(args).filter(([, v]) => v !== undefined)
+      )
+    : undefined;
+
     // Ensure arguments are strings.
-    const stringArgs = args ? Object.fromEntries(
-      Object.entries(args).map(([k, v]) => [k, String(v)])
-    ) : undefined;
+    const stringArgs = cleanedArgs
+      ? Object.fromEntries(
+          Object.entries(cleanedArgs).map(([k, v]) => [k, String(v)])
+        )
+      : undefined;
     
     const connectionBuilder = createConnectionBuilder<NonNullable<T[K]> & Connection>();
     callback(connectionBuilder);
