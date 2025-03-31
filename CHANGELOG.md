@@ -1,3 +1,11 @@
+## 1.2.3
+
+* Ensure that numbers and floats parameters are not converted as string.
+
+## 1.2.2
+
+* Fix bad release
+
 ## 1.2.1
 
 * Ensures that arguments are properly rendered as string.
