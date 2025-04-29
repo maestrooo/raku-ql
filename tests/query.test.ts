@@ -143,4 +143,36 @@ query GetMetaobject($id: ID!) {
 }
     `.trim());
   });
+
+  it('should honor type of parameters', () => {
+    const connectionParameters = {
+      type: "$app:foo",
+      first: 250
+    }
+
+    const query = QueryBuilder.query('GetMetaobject')
+      .connection('metaobjects', connectionParameters, (connection) => {
+        connection.object('nodes', (nodes) => {
+          nodes.fields('id')
+        });
+      })
+      .build({ pretty: true });
+    
+    // Check that the query contains the "query" keyword and the name
+    expect(query).toMatch(`
+query GetMetaobjects {
+  metaobjects(type: "$app:foo", first: 250) {
+    nodes {
+      id
+    }
+  }
+  pageInfo {
+    hasNextPage
+    hasPreviousPage
+    startCursor
+    endCursor
+  }
+}
+    `.trim());
+  });
 });

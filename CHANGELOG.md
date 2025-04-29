@@ -1,3 +1,7 @@
+## 1.2.5
+
+* Fixed an issue with incorrect parameter serialization when it started by a $ character.
+
 ## 1.2.4
 
 * Ensure that undefined parameters are removed.

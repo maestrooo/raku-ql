@@ -156,8 +156,10 @@ export class OperationBuilder<T = any> extends FieldBuilder<T> {
         return `{ ${inner} }`;
       }
     } else if (typeof value === "string") {
-      if (!isNaN(Number(value)) || value.startsWith("$")) {
-        return String(value); // Numbers and variables must not be quoted
+      const isVariable = /^\$[A-Za-z_][A-Za-z0-9_]*$/.test(value);
+      
+      if (!isNaN(Number(value)) || isVariable) {
+        return value;
       } else {
         return `"${value}"`;
       }

@@ -1,6 +1,6 @@
 {
   "name": "raku-ql",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A TypeScript GraphQL query builder",
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
