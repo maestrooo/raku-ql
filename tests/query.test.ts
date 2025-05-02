@@ -147,10 +147,11 @@ query GetMetaobject($id: ID!) {
   it('should honor type of parameters', () => {
     const connectionParameters = {
       type: "$app:foo",
+      reverse: true,
       first: 250
     }
 
-    const query = QueryBuilder.query('GetMetaobject')
+    const query = QueryBuilder.query('GetMetaobjects')
       .connection('metaobjects', connectionParameters, (connection) => {
         connection.object('nodes', (nodes) => {
           nodes.fields('id')
@@ -161,18 +162,17 @@ query GetMetaobject($id: ID!) {
     // Check that the query contains the "query" keyword and the name
     expect(query).toMatch(`
 query GetMetaobjects {
-  metaobjects(type: "$app:foo", first: 250) {
+  metaobjects(type: "$app:foo", reverse: true, first: 250) {
     nodes {
       id
     }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
   }
-  pageInfo {
-    hasNextPage
-    hasPreviousPage
-    startCursor
-    endCursor
-  }
-}
-    `.trim());
+}`.trim());
   });
 });

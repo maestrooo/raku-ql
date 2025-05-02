@@ -1,3 +1,7 @@
+## 1.2.6
+
+* Fixed serialization of boolean parameters.
+
 ## 1.2.5
 
 * Fixed an issue with incorrect parameter serialization when it started by a $ character.

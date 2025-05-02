@@ -162,9 +162,7 @@ export class FieldBuilder<T = any> {
       fieldNode.alias = alias;
     }
     if (args) {
-      fieldNode.args = Object.fromEntries(
-        Object.entries(args).map(([k, v]) => [k, String(v)])
-      );
+      fieldNode.args = args;
     }
     this._fields.push(fieldNode);
     return this;
@@ -202,11 +200,7 @@ export class FieldBuilder<T = any> {
     : undefined;
 
     // Ensure arguments are strings.
-    const stringArgs = cleanedArgs
-      ? Object.fromEntries(
-          Object.entries(cleanedArgs).map(([k, v]) => [k, String(v)])
-        )
-      : undefined;
+    const stringArgs = cleanedArgs;
     
     const connectionBuilder = createConnectionBuilder<NonNullable<T[K]> & Connection>();
     callback(connectionBuilder);
