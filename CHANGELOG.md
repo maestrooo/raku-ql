@@ -1,3 +1,16 @@
+## 1.4.0
+
+* You can now type connections that are top-level:
+
+```ts
+queryBuilder.query('GetMetaobjects')
+  .connection<MetaobjectConnection>('metaobjects', params, metaobjects => {
+    // metaobjects is now fully typed
+  })
+```
+
+* Auto-completion has been improved: the `fields` will now only auto-complete scalar fields while `object` and `connection` will only show the object fields.
+
 ## 1.3.0
 
 * Improve the typing of connections (the typing used to be lost).

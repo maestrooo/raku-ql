@@ -180,4 +180,31 @@ query GetMetaobjects {
   }
 }`.trim());
   });
+
+  it('should allow top-level connection', () => {
+    const query = QueryBuilder.query('GetMetaobjects')
+      .variables({ key: 'String!' })
+      .connection('metaobjects', { key: '$key' }, (connection) => {
+        connection.nodes((nodes) => {
+          nodes.fields('id')
+        });
+      })
+      .build({ pretty: true });
+    
+    // Check that the query contains the "query" keyword and the name
+    expect(query).toMatch(`
+query GetMetaobjects($key: String!) {
+  metaobjects(key: $key) {
+    nodes {
+      id
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
+}`.trim());
+  });
 });

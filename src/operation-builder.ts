@@ -1,5 +1,6 @@
+import { ConnectionBuilder, createConnectionBuilder } from "./connection-builder-factory";
 import { FieldBuilder } from "./field-builder";
-import { FieldNode, FragmentDefinition, Directive } from "./types";
+import { FieldNode, FragmentDefinition, Directive, Connection } from "./types";
 
 export type OperationType = "query" | "mutation" | "subscription";
 
@@ -75,22 +76,10 @@ export class OperationBuilder<T = any> extends FieldBuilder<T> {
     argsOrCallback: { [key: string]: any } | ((builder: FieldBuilder<TResponse>) => void),
     callbackOrNothing?: (builder: FieldBuilder<TResponse>) => void
   ): this {
-    // Extract name and alias
-    let name: string;
-    let alias: string | undefined;
     let callback: (builder: FieldBuilder<TResponse>) => void;
     let args: { [key: string]: any } | undefined;
     
-    if (typeof nameOrMapping === "object") {
-      const keys = Object.keys(nameOrMapping);
-      if (keys.length !== 1) {
-        throw new Error("Only one key is allowed in the alias mapping");
-      }
-      name = keys[0];
-      alias = (nameOrMapping as any)[name];
-    } else {
-      name = nameOrMapping as string;
-    }
+    const { name, alias } = this.extractNameAndAlias(nameOrMapping as any);
     
     // Determine if we're using the callback-only version or the args+callback version
     if (typeof argsOrCallback === "function") {

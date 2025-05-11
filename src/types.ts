@@ -1,5 +1,11 @@
 export type Unarray<T> = T extends (infer U)[] ? U : T;
 
+export type ScalarKeys<T> = {  
+  [K in keyof T]: Unarray<NonNullable<T[K]>> extends object ? never : K  
+}[keyof T];
+
+export type ObjectKeys<T> = Extract<Exclude<keyof T, ScalarKeys<T>>, string>;
+
 /**
  * GraphQL Directive definition.
  */

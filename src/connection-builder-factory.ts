@@ -1,5 +1,5 @@
 import { FieldBuilder } from "./field-builder";
-import { Connection } from "./types";
+import { Connection, ObjectKeys } from "./types";
 
 /**
  * Extend FieldBuilder with connection-specific methods.
@@ -16,15 +16,15 @@ export function createConnectionBuilder<T extends Connection>(): ConnectionBuild
   const builder = new FieldBuilder<T>() as ConnectionBuilder<T>;
 
   builder.nodes = function (callback) {
-    this.object("nodes", callback);
+    this.object("nodes" as ObjectKeys<T>, callback);
     return this;
   };
 
   builder.withPageInfo = function (callback?: (pageInfo: FieldBuilder<any>) => void): ConnectionBuilder<T> {
     if (callback) {
-      this.object("pageInfo", callback);
+      this.object("pageInfo" as ObjectKeys<T>, callback);
     } else {
-      this.object("pageInfo", (pageInfo: FieldBuilder<any>) => {
+      this.object("pageInfo" as ObjectKeys<T>, (pageInfo: FieldBuilder<any>) => {
         pageInfo.fields("hasNextPage", "hasPreviousPage", "startCursor", "endCursor");
       });
     }

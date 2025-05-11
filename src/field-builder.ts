@@ -1,5 +1,5 @@
 import { createConnectionBuilder, ConnectionBuilder } from "./connection-builder-factory";
-import { FieldNode, Directive, Connection, Unarray } from "./types";
+import { FieldNode, Directive, Connection, Unarray, ScalarKeys, ObjectKeys } from "./types";
 
 export class FieldBuilder<T = any> {
   private _fields: FieldNode[] = [];
@@ -9,9 +9,9 @@ export class FieldBuilder<T = any> {
    * Supports nested arguments and an optional `directive` property.
    */
   public fields(...fields: (
-    | keyof T 
-    | Partial<Record<keyof T, string>> 
-    | { field: keyof T | Partial<Record<keyof T, string>>, args?: { [key: string]: any }, directive?: any }
+    | ScalarKeys<T>
+    | Partial<Record<ScalarKeys<T>, string>>
+    | { field: ScalarKeys<T> | Partial<Record<ScalarKeys<T>, string>>; args?: Record<string, any>; directive?: any }
   )[]): this {
     fields.forEach(field => {
       if (typeof field === "object" && "field" in field) {
@@ -89,7 +89,7 @@ export class FieldBuilder<T = any> {
   /**
    * Private helper to extract name and alias from a string or mapping.
    */
-  private extractNameAndAlias<K extends keyof T>(nameOrMapping: K | Partial<Record<K, string>>): { name: K, alias?: string } {
+  protected extractNameAndAlias<K extends keyof T>(nameOrMapping: K | Partial<Record<K, string>>): { name: K, alias?: string } {
     if (typeof nameOrMapping === "object") {
       const keys = Object.keys(nameOrMapping) as K[];
       if (keys.length !== 1) {
@@ -105,36 +105,18 @@ export class FieldBuilder<T = any> {
   /**
    * Adds a nested object field.
    * 
-   * Overload 1 (without alias):
+   * Usage 1 (without alias):
    *    .object("feedback", (feedback) => { feedback.fields("details", "summary") })
-   * Overload 2 (with alias):
+   * Usage 2 (with alias):
    *    .object({ feedback: "aliasedName" }, (feedback) => { feedback.fields("details", "summary") })
-   * Overload 3 (with arguments, without alias):
+   * Usage 3 (with arguments, without alias):
    *    .object("feedback", { key: "value" }, (feedback) => { feedback.fields("details", "summary") })
-   * Overload 4 (with arguments and alias):
+   * Usage 4 (with arguments and alias):
    *    .object({ feedback: "aliasedName" }, { key: "value" }, (feedback) => { feedback.fields("details", "summary") })
    */
-  public object<K extends keyof T>(
-    name: K,
-    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
-  ): this;
-  public object<K extends keyof T>(
-    nameMapping: Partial<Record<K, string>>,
-    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
-  ): this;
-  public object<K extends keyof T>(
-    name: K,
-    args: { [key: string]: any },
-    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
-  ): this;
-  public object<K extends keyof T>(
-    nameMapping: Partial<Record<K, string>>,
-    args: { [key: string]: any },
-    callback: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
-  ): this;
-  public object<K extends keyof T>(
+  public object<K extends ObjectKeys<T>>(
     nameOrMapping: K | Partial<Record<K, string>>,
-    argsOrCallback: { [key: string]: any } | ((builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void),
+    argsOrCallback: Record<string, any> | ((builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void),
     maybeCallback?: (builder: FieldBuilder<Unarray<NonNullable<T[K]>>>) => void
   ): this {
     const { name, alias } = this.extractNameAndAlias(nameOrMapping);
@@ -171,54 +153,55 @@ export class FieldBuilder<T = any> {
   /**
    * Adds a connection field with the standard GraphQL connection pattern.
    * 
-   * Overload 1 (without alias):
+   * Usage 1 (without alias):
    *    .connection("users", { first: "$count" }, connection => { ... })
-   * Overload 2 (with alias):
+   * Usage 2 (with alias):
    *    .connection({ users: "aliasedName" }, { first: "$count" }, connection => { ... })
    */
-  public connection<K extends keyof T>(
-    name: K,
-    args: { [key: string]: any },
-    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>) => void
-  ): this;
-  public connection<K extends keyof T>(
-    nameMapping: Partial<Record<K, string>>,
-    args: { [key: string]: any },
-    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>) => void
-  ): this;
-  public connection<K extends keyof T>(
+  public connection<K extends ObjectKeys<T>>(
     nameOrMapping: K | Partial<Record<K, string>>,
-    args: { [key: string]: any },
+    args: Record<string, any>,
     callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>) => void
+  ): this;
+  public connection<TN extends Connection>(
+    nameOrMapping: string | Record<string, string>,
+    args: Record<string, any>,
+    callback: (connection: ConnectionBuilder<TN>) => void
+  ): this;
+  public connection<TN extends Connection>(
+    nameOrMapping: any,
+    args: any,
+    callback: any
   ): this {
-    const { name, alias } = this.extractNameAndAlias(nameOrMapping);
-    // Filter undefined values from args.
-    const cleanedArgs = args
-    ? Object.fromEntries(
-        Object.entries(args).filter(([, v]) => v !== undefined)
-      )
-    : undefined;
+    const { name, alias } = this.extractNameAndAlias(nameOrMapping as any);
 
-    // Ensure arguments are strings.
-    const stringArgs = cleanedArgs;
-    
-    const connectionBuilder = createConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>();
+    // strip out undefined values
+    const cleanedArgs = Object.fromEntries(
+      Object.entries(args).filter(([, v]) => v !== undefined)
+    );
+
+    // build the ConnectionBuilder<TN>
+    const connectionBuilder = createConnectionBuilder<TN>();
     callback(connectionBuilder);
-    
-    // Ensure pageInfo is present.
-    if (!connectionBuilder.getFields().some(f => f.kind === "object" && f.name === "pageInfo")) {
+
+    // ensure pageInfo is present
+    if (
+      !connectionBuilder
+        .getFields()
+        .some(f => f.kind === "object" && f.name === "pageInfo")
+    ) {
       connectionBuilder.withPageInfo();
     }
-    
+
+    // push into your field list
     const fieldNode: any = {
       kind: "object",
       name: name as string,
-      args: stringArgs,
+      args: cleanedArgs,
       fields: connectionBuilder.getFields(),
     };
-    if (alias) {
-      fieldNode.alias = alias;
-    }
+    if (alias) fieldNode.alias = alias;
+
     this._fields.push(fieldNode);
     return this;
   }
