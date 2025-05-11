@@ -23,23 +23,25 @@ To create a query, use the `query` static method of the query builder. The examp
 To have field auto-completion, use the object type as the generic type.
 
 ```ts
-const query = QueryBuilder.query<Collection>('GetCollection')
+const query = QueryBuilder.query('GetCollection')
   .operationDirective('country', { code: 'FR' })
-  .variables({ productsCount: 'Int!', imageFormat: { type: 'String!', defaultValue: 'JPG' } })
-  .fields(
-    'id', 
-    { 'description': 'aliasDescription' }, 
-    { field: 'price', directive: { inCurrency: { currency: "EUR" } } },
-  )
-  .object('image', image => {
-    image.fields('alt', { field: 'url', args: { format: '$imageFormat' }})
-  })
-  .object({ 'feedback': 'aliasFeedback' }, feedback => {
-    feedback.fields('rating', 'comment')
-  })
-  .connection('products', { first: "$productsCount" }, connection => {
-    connection.nodes(node => {
-      node.useFragment('ProductFragment')
+  .variables({ collectionId: 'String!', productsCount: 'Int!', imageFormat: { type: 'String!', defaultValue: 'JPG' } })
+  .operation<Collection>('collection', { id: '$collectionId' } collection => {
+    .fields(
+      'id', 
+      { 'description': 'aliasDescription' }, 
+      { field: 'price', directive: { inCurrency: { currency: "EUR" } } },
+    )
+    .object('image', image => {
+      image.fields('alt', { field: 'url', args: { format: '$imageFormat' }})
+    })
+    .object({ 'feedback': 'aliasFeedback' }, feedback => {
+      feedback.fields('rating', 'comment')
+    })
+    .connection('products', { first: "$productsCount" }, connection => {
+      connection.nodes(node => {
+        node.useFragment('ProductFragment')
+      })
     })
   })
   .fragment<Product>('ProductFragment', 'Product', fragment => {
@@ -62,27 +64,29 @@ const query = QueryBuilder.query<Collection>('GetCollection')
 This will generate the following GraphQL query:
 
 ```graphql
-query GetCollection($productsCount: Int!, $imageFormat: String! = JPG) @country(code: FR) {
-  id
-  aliasDescription: description
-  price @inCurrency(currency: EUR)
-  image {
-    alt
-    url(format: $imageFormat)
-  }
-  aliasFeedback: feedback {
-    rating
-    comment
-  }
-  products(first: $productsCount) {
-    nodes {
-      ...ProductFragment
+query GetCollection($collectionId: String!, $productsCount: Int!, $imageFormat: String! = JPG) @country(code: FR) {
+  collection(id: $collectionId) {
+    id
+    aliasDescription: description
+    price @inCurrency(currency: EUR)
+    image {
+      alt
+      url(format: $imageFormat)
     }
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
+    aliasFeedback: feedback {
+      rating
+      comment
+    }
+    products(first: $productsCount) {
+      nodes {
+        ...ProductFragment
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
     }
   }
 }

@@ -4,35 +4,38 @@ describe('GraphQL Generation', () => {
   it('should generate a valid GraphQL query', () => {
     const query = QueryBuilder.query('GetCollection')
       .operationDirective('country', { code: 'FR' })
-      .variables({ productsCount: 'Int!', imageFormat: { type: 'String!', defaultValue: 'JPG' } })
-      .fields(
-        'id', 
-        { 'description': 'aliasDescription' }, 
-        { field: 'price', directive: { inCurrency: { currency: "EUR" } } },
-      )
-      .object('image', image => {
-        image.fields('alt', { field: 'url', args: { format: '$imageFormat' }})
-      })
-      .object({ 'feedback': 'aliasFeedback' }, feedback => {
-        feedback.fields('rating', 'comment')
-      })
-      .object({ 'field': 'fieldAlias' }, { key: 'value' }, field => {
-        field.fields('title')
-      })
-      .connection('products', { first: "$productsCount" }, connection => {
-        connection.nodes(node => {
-          node.useFragment('ProductFragment')
-        })
-      })
-      .connection('collections', { first: 50 }, connection => {
-        connection.nodes(node => {
-          node.fields('id')
-        })
-      })
-      .connection('orders', { first: 50, type: undefined }, connection => {
-        connection.nodes(node => {
-          node.fields('id')
-        })
+      .variables({ collectionId: 'String!', productsCount: 'Int!', imageFormat: { type: 'String!', defaultValue: 'JPG' } })
+      .operation('collection', { id: '$collectionId' }, collection => {
+        collection
+          .fields(
+            'id', 
+            { 'description': 'aliasDescription' }, 
+            { field: 'price', directive: { inCurrency: { currency: "EUR" } } },
+          )
+          .object('image', image => {
+            image.fields('alt', { field: 'url', args: { format: '$imageFormat' }})
+          })
+          .object({ 'feedback': 'aliasFeedback' }, feedback => {
+            feedback.fields('rating', 'comment')
+          })
+          .object({ 'field': 'fieldAlias' }, { key: 'value' }, field => {
+            field.fields('title')
+          })
+          .connection('products', { first: "$productsCount" }, connection => {
+            connection.nodes(node => {
+              node.useFragment('ProductFragment')
+            })
+          })
+          .connection('collections', { first: 50 }, connection => {
+            connection.nodes(node => {
+              node.fields('id')
+            })
+          })
+          .connection('orders', { first: 50, type: undefined }, connection => {
+            connection.nodes(node => {
+              node.fields('id')
+            })
+          })
       })
       .fragment('ProductFragment', 'Product', fragment => {
         fragment.fields('title')
@@ -52,52 +55,54 @@ describe('GraphQL Generation', () => {
     
     // Check that the query contains the "query" keyword and the name
     expect(query).toMatch(`
-query GetCollection($productsCount: Int!, $imageFormat: String! = JPG) @country(code: "FR") {
-  id
-  aliasDescription: description
-  price @inCurrency(currency: "EUR")
-  image {
-    alt
-    url(format: $imageFormat)
-  }
-  aliasFeedback: feedback {
-    rating
-    comment
-  }
-  fieldAlias: field(key: "value") {
-    title
-  }
-  products(first: $productsCount) {
-    nodes {
-      ...ProductFragment
+query GetCollection($collectionId: String!, $productsCount: Int!, $imageFormat: String! = JPG) @country(code: "FR") {
+  collection(id: $collectionId) {
+    id
+    aliasDescription: description
+    price @inCurrency(currency: "EUR")
+    image {
+      alt
+      url(format: $imageFormat)
     }
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
+    aliasFeedback: feedback {
+      rating
+      comment
     }
-  }
-  collections(first: 50) {
-    nodes {
-      id
+    fieldAlias: field(key: "value") {
+      title
     }
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
+    products(first: $productsCount) {
+      nodes {
+        ...ProductFragment
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
     }
-  }
-  orders(first: 50) {
-    nodes {
-      id
+    collections(first: 50) {
+      nodes {
+        id
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
     }
-    pageInfo {
-      hasNextPage
-      hasPreviousPage
-      startCursor
-      endCursor
+    orders(first: 50) {
+      nodes {
+        id
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
     }
   }
 }
