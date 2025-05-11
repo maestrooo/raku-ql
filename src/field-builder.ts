@@ -179,17 +179,17 @@ export class FieldBuilder<T = any> {
   public connection<K extends keyof T>(
     name: K,
     args: { [key: string]: any },
-    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection>) => void
+    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>) => void
   ): this;
   public connection<K extends keyof T>(
     nameMapping: Partial<Record<K, string>>,
     args: { [key: string]: any },
-    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection>) => void
+    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>) => void
   ): this;
   public connection<K extends keyof T>(
     nameOrMapping: K | Partial<Record<K, string>>,
     args: { [key: string]: any },
-    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection>) => void
+    callback: (connection: ConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>) => void
   ): this {
     const { name, alias } = this.extractNameAndAlias(nameOrMapping);
     // Filter undefined values from args.
@@ -202,7 +202,7 @@ export class FieldBuilder<T = any> {
     // Ensure arguments are strings.
     const stringArgs = cleanedArgs;
     
-    const connectionBuilder = createConnectionBuilder<NonNullable<T[K]> & Connection>();
+    const connectionBuilder = createConnectionBuilder<NonNullable<T[K]> & Connection<NonNullable<T[K]>>>();
     callback(connectionBuilder);
     
     // Ensure pageInfo is present.

@@ -84,8 +84,8 @@ export interface Edge {
 /**
  * Interface for a GraphQL connection.
  */
-export interface Connection {
+export interface Connection<T = any> {
   edges: Edge[];
-  nodes: any[];
+  nodes: T[];
   pageInfo: any;
 }

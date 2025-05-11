@@ -1,3 +1,7 @@
+## 1.3.0
+
+* Improve the typing of connections (the typing used to be lost).
+
 ## 1.2.6
 
 * Fixed serialization of boolean parameters.

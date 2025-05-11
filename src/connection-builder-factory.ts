@@ -15,7 +15,7 @@ export type ConnectionBuilder<T extends Connection> = FieldBuilder<T> & {
 export function createConnectionBuilder<T extends Connection>(): ConnectionBuilder<T> {
   const builder = new FieldBuilder<T>() as ConnectionBuilder<T>;
 
-  builder.nodes = function (callback: (node: FieldBuilder<any>) => void): ConnectionBuilder<T> {
+  builder.nodes = function (callback) {
     this.object("nodes", callback);
     return this;
   };
